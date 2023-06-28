@@ -1,0 +1,7 @@
+out/
+src/Lexer.hs
+src/Lexer.info
+src/Parser.hs
+src/Parser.info
+
+examples/*.java
