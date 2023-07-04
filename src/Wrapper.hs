@@ -5,18 +5,20 @@ module Wrapper where
 import Embedding
 import Syntax
 
-import Data.Text
-
 template :: String
 template = $(embedFile "wrapper/Main.java")
 
-generateWrapper :: Module -> String
--- TODO: Probably best using a function where we don't have to keep converting
---       between Text and String
-generateWrapper (Module (Ident name) _) = do
-    let x  = replace "/* -IMPORTS- */" (pack ("import " ++ name ++ ";")) (pack template)
-    let x' = replace "/* -BODY- */" (pack (name ++ ".main();")) x
-    unpack x'
+replace :: String -> String -> String -> String
+replace [] _ _ = []
+replace str old new = go str
+    where
+        go [] = []
+        go s@(x:xs)
+            | take (length old) s == old = new ++ drop (length old) s
+            | otherwise                  = x : go xs
 
--- import <Name>;
--- <Name>.main();
+generateWrapper :: Module -> String
+generateWrapper (Module (Ident name) _) = do
+    let x  = replace template "/* -IMPORTS- */" ("import " ++ name ++ ";")
+    let x' = replace x        "/* -BODY- */"    (name ++ ".Main();") 
+    x'
